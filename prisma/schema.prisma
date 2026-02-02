@@ -1,0 +1,111 @@
+// Prisma ORM Schema for Auction System
+// Defines database models for users, auctions, bids, and fraud detection
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  auctions     Auction[]
+  bids         Bid[]
+  fraudAlerts  FraudAlert[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Auction {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  auctionType  String   // "english", "dutch", "sealed-bid"
+  startPrice   Float
+  currentPrice Float
+  reservePrice Float
+  startTime    DateTime
+  endTime      DateTime
+  status       String   @default("active") // "active", "closed", "cancelled"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  bids    Bid[]
+  orders  Order[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Bid {
+  id        String   @id @default(cuid())
+  amount    Float
+  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  auctionId String
+  auction   Auction @relation(fields: [auctionId], references: [id])
+
+  @@index([auctionId])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  amount    Float
+  status    String   @default("pending") // "pending", "filled", "cancelled"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  auctionId String
+  auction   Auction @relation(fields: [auctionId], references: [id])
+
+  @@index([auctionId])
+  @@index([status])
+}
+
+model FraudAlert {
+  id        String   @id @default(cuid())
+  riskScore Float
+  reason    String
+  status    String   @default("pending") // "pending", "reviewed", "dismissed"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+}
