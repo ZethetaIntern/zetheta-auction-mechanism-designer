@@ -1,0 +1,20 @@
+{
+  "name": "zetheta-auction-mechanism-designer",
+  "version": "1.0.0",
+  "description": "Auction market simulation for Treasury and IPO auctions",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "lerna run dev --parallel",
+    "build": "lerna run build",
+    "test": "lerna run test",
+    "lint": "lerna run lint"
+  },
+  "devDependencies": {
+    "lerna": "^7.0.0",
+    "typescript": "^5.0.0"
+  }
+}
